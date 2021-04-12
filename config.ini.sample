@@ -1,0 +1,6 @@
+[Twitter]
+
+CONSUMER_TOKEN=consumertokenhere
+CONSUMER_TOKEN_SECRET=consumertokensecrethere
+ACCESS_TOKEN=accesstokenhere
+ACCESS_TOKEN_SECRET=accesstokensecrethere
