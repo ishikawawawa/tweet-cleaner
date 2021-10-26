@@ -6,7 +6,6 @@ import time
 import logging
 from pathlib import Path
 import json
-from tweepy.user import User
 
 # get args
 
@@ -16,11 +15,16 @@ arg_parser.add_argument(
     type=str,
     required=True,
 )
+arg_parser.add_argument(
+    '--target',
+    type=str,
+    required=True,
+)
 args = arg_parser.parse_args()
 
 # configure logger
 
-logger = logging.getLogger('get-following')
+logger = logging.getLogger('follow-users')
 logging.basicConfig(level=logging.INFO)
 
 # load configure
@@ -28,6 +32,20 @@ logging.basicConfig(level=logging.INFO)
 config_parser = configparser.ConfigParser()
 config_parser.read(args.config)
 tw_conf = config_parser['Twitter']
+
+# load target
+
+target_path = Path(args.target).resolve()
+
+if not target_path.exists():
+    logger.error('not found {path}'.format(path=target_path))
+    exit(1)
+
+users: List[dict] = []
+
+with target_path.open('r') as file:
+    for user in json.loads(file.read()):
+        users.append(user)
 
 # init twitter client
 
@@ -50,30 +68,16 @@ logger.info('run {name}@{screen_name} ({user_id})'.format(
     user_id=me.id,
 ))
 
-# get following
+# follow users
 
-followings: List[User] = []
+user_count = len(users)
 
-for user in tweepy.Cursor(tw_client.get_friends, count=200).items():
-    followings.append(user)
-
-logger.info('got followings ({number})'.format(number=len(followings)))
-
-# save followings
-
-now = time.strftime("%Y%m%d%H%M%S")
-
-output_path = Path('output/{now}'.format(now=now))
-
-if not output_path.exists():
-    output_path.mkdir(parents=True)
-
-for user in followings:
-    filename = "{user_name}.json".format(user_name=user.id)
-    filepath = output_path.joinpath(filename)
-
-    with filepath.open(mode='w', encoding='utf-8') as file:
-        data = json.dumps(user._json, sort_keys=False, ensure_ascii=False)
-        file.write(data)
-
-logger.info('saved followings {filepath}'.format(filepath=output_path))
+for index, user in enumerate(users):
+    logger.info('following... ({index}/{user_count}) @{screen_name}'.format(
+        index=index + 1,
+        user_count=user_count,
+        screen_name=user.get('screen_name'),
+    ))
+    tw_client.create_friendship(user_id=user.get('id_str'))
+    # このスリープが必要かどうか...一応...
+    time.sleep(3)
