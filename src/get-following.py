@@ -64,7 +64,7 @@ now = time.strftime("%Y%m%d%H%M%S")
 output_path = Path('output/{now}'.format(now=now))
 
 if not output_path.exists():
-    output_path.mkdir()
+    output_path.mkdir(parents=True)
 
 for user in followings:
     filename = "{user_name}.json".format(user_name=user.id)
