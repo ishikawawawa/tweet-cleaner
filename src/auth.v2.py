@@ -1,10 +1,10 @@
 import argparse
+import logging
 import configparser
 import tweepy
-import logging
 from pathlib import Path
 
-# section/option names
+# section name
 
 SECTION_TWITTER = 'Twitter'
 OPTION_CONSUMER_TOKEN = 'CONSUMER_TOKEN'
@@ -15,7 +15,11 @@ OPTION_ACCESS_TOKEN_SECRET = 'ACCESS_TOKEN_SECRET'
 # get args
 
 arg_parser = argparse.ArgumentParser()
-arg_parser.add_argument('--config', type=str, required=True)
+arg_parser.add_argument(
+    '--config',
+    type=str,
+    required=True,
+)
 args = arg_parser.parse_args()
 
 # configure loogger
@@ -29,10 +33,8 @@ config_parser = configparser.ConfigParser()
 config_parser.read(args.config)
 tw_conf = config_parser[SECTION_TWITTER]
 
-# init
-
 consumer_key = tw_conf[OPTION_CONSUMER_TOKEN]
-consumer_secret = tw_conf[OPTION_CONSUMER_TOKEN_SECRET]
+consumer_secret = tw_conf[OPTION_ACCESS_TOKEN_SECRET]
 
 auth = tweepy.OAuthHandler(
     consumer_key=consumer_key,
@@ -42,7 +44,8 @@ auth = tweepy.OAuthHandler(
 # auth
 
 auth_url = auth.get_authorization_url()
-logger.info('auth url : {auth_url}'.format(auth_url=auth_url))
+logger.info('auth url : ${auth_url}'.format(auth_url=auth_url))
+
 logger.info('waiting pin code')
 pin = input().strip()
 
@@ -53,24 +56,16 @@ auth.get_access_token(pin)
 access_token = auth.access_token
 access_token_secret = auth.access_token_secret
 
-auth.set_access_token(
-    key=access_token,
-    secret=access_token_secret,
+tw_client = tweepy.Client(
+    consumer_key=consumer_key,
+    consumer_secret=consumer_secret,
+    access_token=access_token,
+    access_token_secret=access_token_secret,
 )
 
-tw_client = tweepy.API(auth=auth)
+me = tw_client.
 
-me = tw_client.verify_credentials()
-
-logger.info('logged in {name}@{screen_name} ({user_id})'.format(
-    name=me.name,
-    screen_name=me.screen_name,
-    user_id=me.id,
-))
-
-# save tokens
-
-filename = 'config.{screen_name}.ini'.format(screen_name=me.screen_name)
+filename = 'config.v2.{screen_name}.ini'.format(screen_name=me.screen_name)
 base_path = Path('config')
 output_path = base_path.joinpath(filename)
 
