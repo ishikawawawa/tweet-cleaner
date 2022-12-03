@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 tweepy = "*"
 yapf = "*"
+requests = "*"
 
 [dev-packages]
 
