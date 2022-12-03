@@ -1,9 +1,8 @@
 import argparse
-import configparser
-import tweepy
 import logging
 from pathlib import Path
 import requests
+import utils
 
 # get args
 
@@ -25,23 +24,9 @@ args = arg_parser.parse_args()
 logger = logging.getLogger('get-following')
 logging.basicConfig(level=logging.INFO)
 
-# load configure
-
-config_parser = configparser.ConfigParser()
-config_parser.read(args.config)
-tw_conf = config_parser['Twitter']
-
 # init twitter client
 
-tw_auth = tweepy.OAuthHandler(
-    consumer_key=tw_conf['CONSUMER_TOKEN'],
-    consumer_secret=tw_conf['CONSUMER_TOKEN_SECRET'],
-)
-tw_auth.set_access_token(
-    key=tw_conf['ACCESS_TOKEN'],
-    secret=tw_conf['ACCESS_TOKEN_SECRET'],
-)
-tw_client = tweepy.API(auth=tw_auth)
+tw_client = utils.twitter_client_from_conf(args.config)
 
 #
 
@@ -49,8 +34,7 @@ filename = "{id}.mp4".format(id=args.id)
 output_dir = Path('output/{id}'.format(id=args.id))
 file_path = output_dir.joinpath(filename)
 
-if not output_dir.exists():
-    output_dir.mkdir(parents=True)
+utils.complete_directory(output_dir)
 
 # test
 
