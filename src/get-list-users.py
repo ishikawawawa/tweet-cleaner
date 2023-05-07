@@ -16,11 +16,16 @@ arg_parser.add_argument(
     type=str,
     required=True,
 )
+arg_parser.add_argument(
+    '--list-id',
+    type=str,
+    required=True,
+)
 args = arg_parser.parse_args()
 
 # configure logger
 
-logger = logging.getLogger('get-following')
+logger = logging.getLogger('get-list-users')
 logging.basicConfig(level=logging.INFO)
 
 # load configure
@@ -52,18 +57,22 @@ logger.info('run {name}@{screen_name} ({user_id})'.format(
 
 # get following
 
-followings: List[User] = []
+users: List[User] = []
 
-for user in tweepy.Cursor(tw_client.get_friends, count=200).items():
-    followings.append(user)
+for user in tweepy.Cursor(
+        tw_client.get_list_members,
+        list_id=args.list_id,
+        count=5000,
+).items():
+    users.append(user)
 
-logger.info('got followings ({number})'.format(number=len(followings)))
+logger.info('got users ({number})'.format(number=len(users)))
 
-# save followings
+# save users
 
 now = time.strftime("%Y%m%d%H%M%S")
 
-output_path = Path('output/get-following-{screen_name}-{now}'.format(
+output_path = Path('output/get-list-users-{screen_name}-{now}'.format(
     screen_name=me.screen_name,
     now=now,
 ))
@@ -71,7 +80,7 @@ output_path = Path('output/get-following-{screen_name}-{now}'.format(
 if not output_path.exists():
     output_path.mkdir(parents=True)
 
-for user in followings:
+for user in users:
     filename = "{user_name}.json".format(user_name=user.id)
     filepath = output_path.joinpath(filename)
 
