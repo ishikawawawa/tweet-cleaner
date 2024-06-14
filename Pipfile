@@ -6,8 +6,10 @@ name = "pypi"
 [packages]
 tweepy = "*"
 yapf = "*"
+requests = "*"
 
 [dev-packages]
+yapf = "*"
 
 [requires]
 python_version = "3.10"
